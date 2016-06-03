@@ -1,21 +1,28 @@
-"""
+"""Compile and integrate external frameworks into an iOS project.
+
 Usage:
+  kivy_libs.py build [LIBRARY]
+  kivy_libs.py update [XCODEPROJ]
 
-    python make-kivy-library.py <library-name>
+Arguments:
+  library : The library you wish to compile. The supported libraries can be
+            found in kivy-ios/recipes
+  xcodeproj : The path to your .xcodeproj file that you wish to update.
 
-where <library-name> is a directory in kivy-ios/recipes/
+Examples:
+  kivy_libs.py build numpy
+  kivy_libs.py update ~/Developer/numpy-ios-app/app.xcodeproj
+
+Options:
+  -h, --help
+
 """
 
 from __future__ import print_function
 import os, sys
+from docopt import docopt
 
-if __name__ == "__main__":
-    if sys.argv[1] == None:
-        print("Usage: python make-kivy-library.py [dir name]")
-        sys.exit()
-
-    kivy_dir = 'kivy-ios'
-    library_name = sys.argv[1]
+def build(library_name, kivy_dir='kivy-ios'):
     kivy_proj_dir = 'temp-{}'.format(library_name)
 
     # building the requested library and the kivy library
@@ -42,3 +49,15 @@ if __name__ == "__main__":
     # cleaning up, and removing the iOS project that kivy created
     os.system('cd {}; rm -rf temp-ios-{}-ios'.format(kivy_dir, library_name))
     os.system('rm -rf {}/{}/'.format(kivy_dir, kivy_proj_dir))
+
+def update(xcodeproj, kivy_dir='kivy-ios'):
+    os.system('cd {}; ./toolchain.py update {}'.format(kivy_dir, xcodeproj))
+
+if __name__ == "__main__":
+    args = docopt(__doc__)
+    print("args = {}".format(args))
+
+    if args['build']:
+        build(args['LIBRARY'])
+    elif args['update']:
+        update(args['XCODEPROJ'])
